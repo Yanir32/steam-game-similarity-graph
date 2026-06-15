@@ -1,0 +1,12 @@
+gdown
+python-louvain
+thefuzz
+python-Levenshtein
+networkx
+matplotlib
+numpy
+pandas
+scikit-learn
+tqdm
+
+#pip install -r requirements.txt
