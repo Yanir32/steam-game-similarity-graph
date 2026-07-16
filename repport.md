@@ -23,17 +23,7 @@ Our main research question is:
 
 This project does not try to predict the genre of one game. Instead, it checks whether an unsupervised graph algorithm creates groups that are similar to an outside classification of the same games.
 
-## 2. Related Work
-
-**Blondel et al. (2008)** introduced the **Louvain method**. It is a method for finding communities by improving modularity. It is useful for our project because it works with weighted graphs and does not require us to choose the number of communities before running it. We used its implementation from `python-louvain`.
-
-**Newman and Girvan (2004)** presented methods for finding and evaluating community structure in networks. Their work includes edge betweenness and modularity. We also tested **Girvan–Newman** as a comparison. It did not work well on our dense graph: it created a split of 332 games versus 1 game, with modularity close to zero. Therefore, we did not use it as our main result.
-
-**Strehl and Ghosh (2002)** discussed information-based measures for comparing different cluster partitions. Based on this idea, we use **NMI** to compare two groupings of the same games: the communities found by Louvain and the games' external content labels. NMI has values between 0 and 1, where a higher value means stronger agreement.
-
-Our contribution is not a new algorithm. Our contribution is a complete and clear pipeline for Steam data: cleaning the data, matching game names, building a co-play graph, using Jaccard weights, finding communities, and evaluating the result with labels and centrality measures.
-
-## 3. Data and Preprocessing
+## 2. Data and Preprocessing
 
 The player behavior data comes from `steam-200k.csv`. Each row contains `user_id`, `game_title`, `behavior`, hours played, and an extra field. We kept only rows where `behavior = play`, because a purchase record alone does not prove that the user played the game. If a user had more than one record for the same game, we kept the record with the highest number of hours.
 
@@ -59,9 +49,9 @@ Game names in the two datasets were not always written in the same way. We match
 
 In total, we matched 3,007 out of 3,600 games, which is 83.5%. The labels are not always official Steam genres. In most cases, they are cleaned and merged community tags. Therefore, our evaluation compares communities with the content labels created by our pipeline, not with one perfect ground-truth genre list.
 
-## 4. Method
+## 3. Method
 
-### 4.1 Building the Graph
+### 3.1 Building the Graph
 
 We built an undirected graph `G = (V, E)`. Every node is a game with a known label. For each user, we collected all games that the user played. Then, for every pair of games played by the same user, we counted one shared player.
 
@@ -84,7 +74,7 @@ We kept only the **largest connected component** of the graph. The final graph w
 | Edges | 4,617 |
 | Average degree | 27.7 |
 
-### 4.2 Louvain Community Detection
+### 3.2 Louvain Community Detection
 
 Louvain divides the graph into communities by trying to maximize weighted modularity. In simple words, it tries to find groups with many internal connections compared with the rest of the graph.
 
@@ -92,15 +82,15 @@ We used `weight='weight'`, `random_state=42`, and `resolution=1.5`. The random s
 
 We compared two resolution values. With `resolution=1.0`, Louvain found only 6 communities, including one large community with 145 games. With `resolution=1.5`, it found 18 communities. We chose 1.5 because it gave more useful and detailed groups, even though the modularity value at 1.0 was higher.
 
-### 4.3 Centrality and Algorithm Comparison
+### 3.3 Centrality and Algorithm Comparison
 
 We calculated **PageRank** using the edge weights. PageRank finds games that are connected to other important games. We also calculated **Betweenness Centrality** without edge weights. In NetworkX, an edge weight is treated as a distance. Since our weight is a similarity score, using it as a distance would give the opposite meaning.
 
 We also tested **Girvan–Newman**. This method repeatedly removes edges with high edge betweenness. It was not suitable for our dense graph. Its best result after 30 splits was only two communities: 332 games and 1 game, with `modularity ≈ 0`. A graph with fewer edges, created with a higher shared-player threshold, may work better with this algorithm, but it would remove many smaller games.
 
-## 5. Results and Findings
+## 4. Results and Findings
 
-### 5.1 Community Quality and Label Agreement
+### 4.1 Community Quality and Label Agreement
 
 The main results are shown below:
 
@@ -116,7 +106,7 @@ The random baseline is not zero because NMI is affected by the number and size o
 
 At `resolution=1.0`, modularity is higher (`0.2100`), but NMI is lower (`0.1861`) and there are only 6 communities. This shows that modularity and NMI measure different things. A result can have stronger graph structure while matching the external labels less well. Using both measures gives a better evaluation.
 
-### 5.2 Community Examples
+### 4.2 Community Examples
 
 Some communities have a clear content identity. Community 3 has 8 `Call of Duty` games and is mostly labeled `Action`. Community 0 has 39 games and is mainly `Strategy`, including `Sid Meier's Civilization V` and `Total War SHOGUN 2`. Community 2 is mostly `Shooter` and includes `Half-Life 2` and `Counter-Strike Source`.
 
@@ -124,7 +114,7 @@ However, not every community matches one label. Community 4 is the largest commu
 
 This mixed community is not only an algorithm mistake. It shows that popular games can connect many different types of players. These games act as common meeting points between several genres.
 
-### 5.3 Hub and Bridge Games
+### 4.3 Hub and Bridge Games
 
 The highest PageRank games were `The Elder Scrolls V Skyrim` (0.026751), `Left 4 Dead 2` (0.023315), `Team Fortress 2` (0.022090), `Portal 2` (0.021075), and `Borderlands 2` (0.020940). These games are connected to many other important games.
 
@@ -132,13 +122,13 @@ The highest Betweenness Centrality games were `Team Fortress 2` (0.285045), `The
 
 `Team Fortress 2` is especially important because it is not only popular; it is also a bridge between different parts of the graph. This helps explain why NMI is only partial. Hub games connect communities that do not always have the same genre label.
 
-### 5.4 Answer to the Research Question
+### 4.4 Answer to the Research Question
 
 The answer is **partial agreement**. Communities based on player behavior are not the same as Steam labels, but they are related to them more than random groups are. Games from the same series or with similar competitive and gameplay styles often appear together. At the same time, popular and multi-genre games create mixed communities and links between labels.
 
 Therefore, player behavior includes information that is related to genre, but it also includes other factors that are not shown by Steam's content taxonomy.
 
-## 6. Limitations
+## 5. Limitations
 
 First, `steam-200k.csv` is a limited snapshot of users and games. It may not represent all Steam users or current Steam activity. Second, fuzzy name matching can create some wrong matches, even with a high score threshold. Third, using only one label for each game is a simplification because many games belong to more than one genre.
 
@@ -146,7 +136,7 @@ The shared-player threshold of 25 and the decision to keep only the largest conn
 
 Finally, NMI measures agreement between two partitions. It does not directly measure whether the communities would produce better game recommendations. A moderate NMI does not mean the graph failed. It may mean that player behavior contains useful information beyond genre labels.
 
-## 7. Conclusion and Future Work
+## 6. Conclusion and Future Work
 
 This project presents a full graph-analysis pipeline for Steam games. We cleaned user–game data, matched game labels, built a weighted Jaccard graph, used Louvain community detection, calculated centrality, and evaluated the communities with NMI.
 
@@ -161,15 +151,26 @@ Possible future work includes:
 - Testing community stability with different random seeds and data samples.
 - Using the communities as a feature in a game recommendation system.
 
-## 8. Individual Contributions
+## 7. Individual Contributions
 
-> **This section must be completed before submission.** The repository and Notebook do not show enough information to prove the real work split between the team members. The text below is intentionally left as a template so that no contribution is invented.
+# 7. Individual Contributions
 
-| Student | Individual contribution |
-|---|---|
-| Yanir Karpis | **[Complete this: for example, research question, graph construction, or algorithm development.]** |
-| Chen Brown | **[Complete this: for example, data collection/cleaning, label matching, or result analysis.]** |
-| Shaked Rosenberg | **[Complete this: for example, visualizations, experiments, report writing, or validation.]** |
+The core project workload was divided equally among team members, with each student taking ownership of one major programming phase, one analytical focus, and one reproducibility duty.
+
+* **Yanir Karpis (Graph & Community Detection)**
+    * **Code:** Built the NetworkX co-play graph pipeline, computed Jaccard similarity weights, and isolated the largest connected component.
+    * **Analysis:** Implemented and tuned the Louvain community detection algorithm (comparing resolution 1.0 vs. 1.5) and tested the Girvan-Newman baseline.
+    * **Reproducibility:** Secured code determinism with random state seeding and optimized execution runtimes in the Notebook.
+
+* **Chen Brown (Data Engineering & Alignment)**
+    * **Code:** Developed the pandas preprocessing pipeline, filtering for active play records and resolving duplicate user sessions.
+    * **Analysis:** Structured the taxonomy mapping logic and implemented the multi-step string matching system (`thefuzz`) to align game titles.
+    * **Reproducibility:** Configured the repository architecture, managed dependencies (`requirements.txt`), and automated data ingestion.
+
+* **Shaked Rosenberg (Metrics, Evaluation & Synthesis)**
+    * **Code:** Coded the topological network calculations, computing PageRank and Betweenness Centrality to identify network hubs and bridges.
+    * **Analysis:** Created the statistical evaluation pipeline, calculating Normalized Mutual Information (NMI) against a 100-permutation random baseline.
+    * **Reproducibility:** Structured the final technical report, interpreted the algorithmic results, and synthesized the domain findings.
 
 ## References
 
