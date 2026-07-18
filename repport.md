@@ -177,7 +177,7 @@ The core project workload was divided equally among team members, with each stud
 1. Blondel, V. D., Guillaume, J.-L., Lambiotte, R., & Lefebvre, E. (2008). *Fast unfolding of communities in large networks*. Journal of Statistical Mechanics: Theory and Experiment, P10008. https://doi.org/10.1088/1742-5468/2008/10/P10008
 2. Newman, M. E. J., & Girvan, M. (2004). *Finding and evaluating community structure in networks*. Physical Review E, 69, 026113. https://doi.org/10.1103/PhysRevE.69.026113
 3. Strehl, A., & Ghosh, J. (2002). *Cluster Ensembles — A Knowledge Reuse Framework for Combining Multiple Partitions*. Journal of Machine Learning Research, 3, 583–617. https://jmlr.csail.mit.edu/papers/v3/strehl02a.html
-4. `steam-200k.csv` and `games.json`, the datasets used by the project Notebook and downloaded through its Google Drive code.
+4. `steam-200k.csv` and `games.json`, the datasets used by the project Notebook and downloaded through its Google Drive code. https://www.kaggle.com/datasets/fronkongames/steam-games-dataset?resource=download
 
 ---
 
